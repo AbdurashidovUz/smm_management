@@ -2017,27 +2017,6 @@
     function init() {
       renderVGList();
       renderCalendar();
-      // Seed example tasks if empty
-      if (tasks.length === 0) {
-        const m = currentMonth, y = currentYear;
-        const seedTasks = [
-          { id: 's1', type: 'shoot', title: 'Dr. Karimov - Cardiology', date: formatDate(y, m, 3), time: '10:00', doctor: 'Dr. A. Karimov, City Clinic', videographerId: 'vg1', status: 'done', notes: 'Bring wide lens', caption: '', },
-          { id: 's2', type: 'edit', title: 'Edit: Dr. Karimov video', date: formatDate(y, m, 5), time: '14:00', doctor: '', videographerId: 'vg2', status: 'done', notes: '', caption: '', },
-          { id: 's3', type: 'post', title: 'Post: Cardiology Tips', date: formatDate(y, m, 7), time: '18:00', doctor: '', videographerId: 'vg2', status: 'pending', notes: '', caption: 'Check your heart health with our expert team!', },
-          { id: 's4', type: 'shoot', title: 'Dr. Rustamov - Neurology', date: formatDate(y, m, 10), time: '11:00', doctor: 'Dr. B. Rustamov, National Hospital', videographerId: 'vg3', status: 'pending', notes: 'Ask about migraines topic', caption: '', },
-          { id: 's5', type: 'edit', title: 'Edit: Dr. Rustamov video', date: formatDate(y, m, 12), time: '09:00', doctor: '', videographerId: 'vg2', status: 'pending', notes: '', caption: '', },
-          { id: 's6', type: 'post', title: 'Post: Neurology Awareness', date: formatDate(y, m, 14), time: '19:00', doctor: '', videographerId: 'vg2', status: 'missed', notes: '', caption: 'Your brain health matters!', },
-          { id: 's7', type: 'shoot', title: 'Dr. Yusupova - Pediatrics', date: formatDate(y, m, 17), time: '10:30', doctor: 'Dr. L. Yusupova, Kids Clinic', videographerId: 'vg1', status: 'pending', notes: '', caption: '', },
-          { id: 's8', type: 'shoot', title: 'Dr. Mirzaev - Orthopedics', date: formatDate(y, m, 20), time: '15:00', doctor: 'Dr. S. Mirzaev, Sport Med Center', videographerId: 'vg3', status: 'pending', notes: 'Outdoor interview', caption: '', },
-          { id: 's9', type: 'edit', title: 'Edit: Pediatrics video', date: formatDate(y, m, 19), time: '13:00', doctor: '', videographerId: 'vg2', status: 'pending', notes: '', caption: '', },
-          { id: 's10', type: 'post', title: 'Post: Pediatrics Tips', date: formatDate(y, m, 21), time: '20:00', doctor: '', videographerId: 'vg2', status: 'pending', notes: '', caption: 'Kids health first!', },
-          { id: 's11', type: 'post', title: 'Post: Orthopedics', date: formatDate(y, m, 23), time: '18:30', doctor: '', videographerId: 'vg2', status: 'pending', notes: '', caption: '', },
-          { id: 's12', type: 'shoot', title: 'Dr. Toshmatov - Dermatology', date: formatDate(y, m, 25), time: '11:00', doctor: 'Dr. O. Toshmatov, SkinCare Clinic', videographerId: 'vg1', status: 'pending', notes: '', caption: '', },
-        ];
-        tasks = seedTasks;
-        saveData();
-      }
-      renderCalendar();
     }
 
     init();
