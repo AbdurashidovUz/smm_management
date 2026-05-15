@@ -1540,6 +1540,7 @@
       <div class="modal-footer">
         <button class="btn-delete" id="detailDeleteBtn">Delete Task</button>
         <button class="btn-cancel" onclick="closeModal('detailModal')">Close</button>
+        <button id="detailNotifyBtn" style="padding:8px 16px;border-radius:8px;border:1px solid var(--accent3);background:transparent;color:var(--accent3);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;display:none;" onmouseover="this.style.background='rgba(0,201,167,0.12)'" onmouseout="this.style.background='transparent'">&#128231; Notify</button>
         <button class="btn-save" id="detailEditBtn">Edit Task</button>
       </div>
     </div>
@@ -1547,7 +1548,7 @@
 
   <!-- ADD MEMBER MODAL -->
   <div class="modal-overlay" id="vgModal">
-    <div class="modal" style="width:380px;">
+    <div class="modal" style="width:420px;">
       <div class="modal-header">
         <div class="modal-title">Add Team Member</div>
         <button class="modal-close" onclick="closeModal('vgModal')">&#215;</button>
@@ -1556,6 +1557,10 @@
         <div class="form-group">
           <label class="form-label">Full Name</label>
           <input type="text" class="form-input" id="vgName" placeholder="e.g. Amir Karimov" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="vgEmail" placeholder="e.g. amir@example.com" />
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -1870,7 +1875,9 @@
 
       let html = '';
       html += `<div class="detail-row"><div class="detail-key">Date</div><div class="detail-val">${formatDateDisplay(task.date)}${task.time ? ' at ' + formatTime(task.time) : ''}</div></div>`;
-      if (vg) html += `<div class="detail-row"><div class="detail-key">Assigned To</div><div class="detail-val" style="display:flex;align-items:center;gap:8px;"><span style="width:20px;height:20px;border-radius:50%;background:${vg.color};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">${vg.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>${vg.name} <span style="font-size:11px;color:var(--text3)">(${vg.role})</span></div></div>`;
+      if (vg) {
+        html += `<div class="detail-row"><div class="detail-key">Assigned To</div><div class="detail-val" style="display:flex;align-items:center;gap:8px;"><span style="width:20px;height:20px;border-radius:50%;background:${vg.color};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">${vg.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</span>${vg.name} <span style="font-size:11px;color:var(--text3)">(${vg.role})</span>${vg.email ? `<span style="font-size:11px;color:var(--accent3);margin-left:4px;">&#128231; ${vg.email}</span>` : ''}</div></div>`;
+      }
       if (task.doctor) html += `<div class="detail-row"><div class="detail-key">Doctor / Loc.</div><div class="detail-val">${task.doctor}</div></div>`;
       if (task.caption) html += `<div class="detail-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div class="detail-key" style="margin-bottom:4px;">Caption</div><div class="detail-val" style="white-space:pre-wrap;font-size:12px;line-height:1.5;">${task.caption}</div></div>`;
       if (task.notes) html += `<div class="detail-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><div class="detail-key" style="margin-bottom:4px;">Notes</div><div class="detail-val" style="white-space:pre-wrap;font-size:12px;color:var(--text2);">${task.notes}</div></div>`;
@@ -1886,7 +1893,49 @@
       document.getElementById('detailDeleteBtn').onclick = () => deleteTask(taskId);
       document.getElementById('detailEditBtn').onclick = () => editTask(taskId);
 
+      // Show Notify button only if the assigned member has an email
+      const notifyBtn = document.getElementById('detailNotifyBtn');
+      if (vg && vg.email) {
+        notifyBtn.style.display = '';
+        notifyBtn.onclick = () => notifyVG(taskId);
+      } else {
+        notifyBtn.style.display = 'none';
+      }
+
       openModal('detailModal');
+    }
+
+    // ====================== NOTIFY VG ======================
+    function notifyVG(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      const vg = videographers.find(v => v.id === task.videographerId);
+      if (!vg || !vg.email) { showToast('No email for this team member', 'error'); return; }
+
+      const typeLabel = task.type === 'shoot' ? 'Video Shoot' : task.type === 'edit' ? 'Montaj / Edit' : 'Instagram Post';
+      const subject = encodeURIComponent(`[SMM Planner] Task Assigned: ${task.title}`);
+      const body = encodeURIComponent(
+`Hello ${vg.name},
+
+You have been assigned a new task in the SMM Production Planner.
+
+━━━━━━━━━━━━━━━━━━━━━
+TASK DETAILS
+━━━━━━━━━━━━━━━━━━━━━
+Title   : ${task.title}
+Type    : ${typeLabel}
+Date    : ${formatDateDisplay(task.date)}${task.time ? ' at ' + formatTime(task.time) : ''}
+${task.doctor ? 'Location: ' + task.doctor + '\n' : ''}Status  : ${task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+${task.notes ? '\nNotes:\n' + task.notes : ''}${task.caption ? '\n\nCaption Draft:\n' + task.caption : ''}
+━━━━━━━━━━━━━━━━━━━━━
+
+Please confirm receipt of this task.
+
+Best regards,
+SMM Production Planner`);
+
+      window.location.href = `mailto:${vg.email}?subject=${subject}&body=${body}`;
+      showToast(`Opening email to ${vg.name}...`, 'success');
     }
 
     function updateStatus(status) {
@@ -1933,6 +1982,7 @@
     // ====================== ADD VG ======================
     function openAddVGModal() {
       document.getElementById('vgName').value = '';
+      document.getElementById('vgEmail').value = '';
       openModal('vgModal');
     }
 
@@ -1942,6 +1992,7 @@
       const vg = {
         id: 'vg_' + Date.now(),
         name,
+        email: document.getElementById('vgEmail').value.trim(),
         role: document.getElementById('vgRole').value,
         color: document.getElementById('vgColor').value,
       };
