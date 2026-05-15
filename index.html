@@ -1306,6 +1306,7 @@
       <button class="nav-btn" id="viewListBtn" onclick="switchView('list')">List View</button>
     </nav>
     <div class="header-actions">
+      <button onclick="clearAllData()" style="padding:8px 14px;border-radius:8px;border:1px solid var(--missed);background:transparent;color:var(--missed);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(214,48,49,0.1)'" onmouseout="this.style.background='transparent'">🗑 Reset All</button>
       <button class="btn-primary" onclick="openAddModal()">+ Add Task</button>
     </div>
   </header>
@@ -1606,6 +1607,14 @@
     // ====================== DATA ======================
     let tasks = JSON.parse(localStorage.getItem('smmTasks') || '[]');
     let videographers = JSON.parse(localStorage.getItem('smmVGs') || '[]');
+
+    function clearAllData() {
+      if (confirm('⚠️ This will permanently delete ALL tasks and team members. Are you sure?')) {
+        localStorage.removeItem('smmTasks');
+        localStorage.removeItem('smmVGs');
+        location.reload();
+      }
+    }
 
     function saveData() {
       localStorage.setItem('smmTasks', JSON.stringify(tasks));
