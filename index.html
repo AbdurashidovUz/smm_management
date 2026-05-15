@@ -8,6 +8,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap"
     rel="stylesheet" />
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <style>
     :root {
       --bg: #f0f2f8;
@@ -1765,6 +1766,7 @@
         const dow = (firstDay + d - 1) % 7;
         const isSun = dow === 0, isSat = dow === 6;
         let dayTasks = tasks.filter(t => t.date === dateStr);
+        if (activeProject !== 'all') dayTasks = dayTasks.filter(t => t.project === activeProject);
         if (activeFilter !== 'all') dayTasks = dayTasks.filter(t => t.type === activeFilter);
 
         const donePct = dayTasks.length > 0 ? Math.round(dayTasks.filter(t => t.status === 'done').length / dayTasks.length * 100) : 0;
@@ -1967,7 +1969,7 @@
       openModal('detailModal');
     }
 
-    // ====================== NOTIFY VG ======================
+    // ====================== NOTIFY VG (EMAILJS) ======================
     function notifyVG(taskId) {
       const task = tasks.find(t => t.id === taskId);
       if (!task) return;
@@ -1975,29 +1977,43 @@
       if (!vg || !vg.email) { showToast('No email for this team member', 'error'); return; }
 
       const typeLabel = task.type === 'shoot' ? 'Video Shoot' : task.type === 'edit' ? 'Montaj / Edit' : 'Instagram Post';
-      const subject = encodeURIComponent(`[SMM Planner] Task Assigned: ${task.title}`);
-      const body = encodeURIComponent(
-`Hello ${vg.name},
+      const details = `Type: ${typeLabel}\nDate: ${formatDateDisplay(task.date)}${task.time ? ' at ' + formatTime(task.time) : ''}\nStatus: ${task.status}\nLocation: ${task.doctor || 'N/A'}\nNotes: ${task.notes || 'None'}`;
 
-You have been assigned a new task in the SMM Production Planner.
+      // ⚠️ EMAILJS SETUP REQUIRED:
+      // 1. Create a free account at https://www.emailjs.com/
+      // 2. Add an Email Service (e.g. Gmail) and get your SERVICE_ID
+      // 3. Create an Email Template and get your TEMPLATE_ID
+      // 4. Get your PUBLIC_KEY from Account -> API Keys
+      // 5. Replace the placeholder strings below:
+      
+      const SERVICE_ID = "YOUR_SERVICE_ID";
+      const TEMPLATE_ID = "YOUR_TEMPLATE_ID"; 
+      const PUBLIC_KEY = "YOUR_PUBLIC_KEY";
 
-━━━━━━━━━━━━━━━━━━━━━
-TASK DETAILS
-━━━━━━━━━━━━━━━━━━━━━
-Title   : ${task.title}
-Type    : ${typeLabel}
-Date    : ${formatDateDisplay(task.date)}${task.time ? ' at ' + formatTime(task.time) : ''}
-${task.doctor ? 'Location: ' + task.doctor + '\n' : ''}Status  : ${task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-${task.notes ? '\nNotes:\n' + task.notes : ''}${task.caption ? '\n\nCaption Draft:\n' + task.caption : ''}
-━━━━━━━━━━━━━━━━━━━━━
+      if (SERVICE_ID === "YOUR_SERVICE_ID") {
+        showToast('EmailJS keys missing! Please add them in the code.', 'error');
+        // Fallback to mailto if keys aren't set yet:
+        const subject = encodeURIComponent(`[SMM Planner] Task Assigned: ${task.title}`);
+        const body = encodeURIComponent(`Hello ${vg.name},\n\nYou have been assigned a new task:\n\n${details}`);
+        window.location.href = `mailto:${vg.email}?subject=${subject}&body=${body}`;
+        return;
+      }
 
-Please confirm receipt of this task.
-
-Best regards,
-SMM Production Planner`);
-
-      window.location.href = `mailto:${vg.email}?subject=${subject}&body=${body}`;
-      showToast(`Opening email to ${vg.name}...`, 'success');
+      showToast(`Sending email to ${vg.name}...`, '');
+      
+      emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+        to_name: vg.name,
+        to_email: vg.email,
+        task_title: task.title,
+        message: details,
+        reply_to: "your_email@example.com" // You can hardcode your email here
+      }, PUBLIC_KEY)
+      .then(function(response) {
+         showToast('Email sent successfully!', 'success');
+      }, function(error) {
+         showToast('Failed to send email. Check console.', 'error');
+         console.error('EmailJS Error:', error);
+      });
     }
 
     function updateStatus(status) {
