@@ -1605,11 +1605,7 @@
 
     // ====================== DATA ======================
     let tasks = JSON.parse(localStorage.getItem('smmTasks') || '[]');
-    let videographers = JSON.parse(localStorage.getItem('smmVGs') || 'null') || [
-      { id: 'vg1', name: 'Amir K.', role: 'Videographer', color: '#ff9f43' },
-      { id: 'vg2', name: 'Dilnoza R.', role: 'Editor', color: '#a29bfe' },
-      { id: 'vg3', name: 'Bobur T.', role: 'Videographer', color: '#43e6c5' },
-    ];
+    let videographers = JSON.parse(localStorage.getItem('smmVGs') || '[]');
 
     function saveData() {
       localStorage.setItem('smmTasks', JSON.stringify(tasks));
